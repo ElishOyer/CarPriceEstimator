@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Price Prediction Form</title>
+    
+    <!-- 
+    Summary:
+    This HTML page provides a form for car price prediction. It includes input fields for various car attributes 
+    such as manufactor, model, year, hand, and others. The form performs client-side validation to ensure the 
+    accuracy of the entered data. It utilizes the Fetch API to load unique values from a JSON file and populates 
+    datalists for autocomplete suggestions. Upon form submission, the form data is sent to a server endpoint 
+    ('/predict') for price prediction. The result or error message is displayed on the page, with the estimated 
+    price if successful.
+    -->
+
+    
+    <style>
+        /* Basic styles for the page */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            font-size: 2em;
+            animation: fadeIn 2s;
+        }
+        p {
+            text-align: center;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+        /* Styling the form */
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            animation: slideIn 1s ease-out;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], input[type="date"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 0 auto;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+        .container {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+    <script>
+        // Load unique values from the JSON file
+        fetch('/unique_values.json')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);  // הצגת הנתונים בקונסול
+                populateDatalist('manufactorList', data.manufactor);
+                populateDatalist('modelList', data.model);
+                populateDatalist('gearList', data.Gear);
+                populateDatalist('cityList', data.City);
+            })
+            .catch(error => console.error('Error loading unique values:', error));
+
+        function populateDatalist(elementId, values) {
+            const datalist = document.getElementById(elementId);
+            values.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                datalist.appendChild(option);
+            });
+        }
+
+
+        function validateForm() {
+            let isValid = true;
+
+            // Validate manufactor input
+            const manufactor = document.getElementById("manufactor").value;
+            if (!manufactor) {
+                document.getElementById('manufactorError').textContent = 'This field is mandatory, please fill it out *';
+                isValid = false;
+            } else if (manufactor.length < 2 || manufactor.length > 50) {
+                document.getElementById('manufactorError').textContent = 'Please enter a valid manufactor name (2-50 characters)';
+                isValid = false;
+            } else {
+                document.getElementById('manufactorError').textContent = '';
+            }
+
+            // Validate year input
+            const year = document.getElementById("Year").value;
+            if (!year) {
+                document.getElementById('yearError').textContent = 'This field is mandatory, please fill it out *';
+                isValid = false;
+            } else if (year < 1900 || year > new Date().getFullYear()) {
+                document.getElementById('yearError').textContent = 'Please enter a valid year (1900 - current year)';
+                isValid = false;
+            } else {
+                document.getElementById('yearError').textContent = '';
+            }
+
+            // Validate model input
+            const model = document.getElementById("model").value;
+            if (!model) {
+                document.getElementById('modelError').textContent = 'This field is mandatory, please fill it out *';
+                isValid = false;
+            } else if (model.length < 2 || model.length > 50) {
+                document.getElementById('modelError').textContent = 'Please enter a valid model name (2-50 characters)';
+                isValid = false;
+            } else {
+                document.getElementById('modelError').textContent = '';
+            }
+
+            // Validate hand input
+            const hand = document.getElementById('Hand').value;
+            if (!hand) {
+                document.getElementById('handError').textContent = 'This field is mandatory, please fill it out *';
+                isValid = false;
+            } else if (hand < 1 || hand > 5) {
+                document.getElementById('handError').textContent = 'Please enter a number between 1-5';
+                isValid = false;
+            } else {
+                document.getElementById('handError').textContent = '';
+            }
+
+            // Validate city input
+            const city = document.getElementById("City").value;
+            if (!city) {
+                document.getElementById('cityError').textContent = 'This field is mandatory, please fill it out *';
+                isValid = false;
+            } else if (city.length < 2 || city.length > 50) {
+                document.getElementById('cityError').textContent = 'Please enter a valid city name (2-50 characters)';
+                isValid = false;
+            } else {
+                document.getElementById('cityError').textContent = '';
+            }
+
+            // Validate gear input if not empty
+            const gear = document.getElementById("Gear").value;
+            if (gear && (gear.length < 2 || gear.length > 50)) {
+                document.getElementById('gearError').textContent = 'Please enter a valid gear name (2-50 characters)';
+                isValid = false;
+            } else {
+                document.getElementById('gearError').textContent = '';
+            }
+
+            // Validate engine capacity input if not empty
+            const capacity = document.getElementById('capacity_Engine').value;
+            if (capacity && (capacity <= 0 || capacity > 10000)) {
+                document.getElementById('capacityError').textContent = 'Please enter a valid engine capacity (0 - 10000)';
+                isValid = false;
+            } else {
+                document.getElementById('capacityError').textContent = '';
+            }
+
+            // Validate engine type input if not empty
+            const engineType = document.getElementById('Engine_type').value;
+            if (engineType && (engineType.length < 2 || engineType.length > 50)) {
+                document.getElementById('engineTypeError').textContent = 'Please enter a valid engine type (2-50 characters)';
+                isValid = false;
+            } else {
+                document.getElementById('engineTypeError').textContent = '';
+            }
+
+            // Validate previous ownership input if not empty
+            const prevOwnership = document.getElementById('Prev_ownership').value;
+            if (prevOwnership && (prevOwnership.length < 2 || prevOwnership.length > 50)) {
+                document.getElementById('prevOwnershipError').textContent = 'Please enter a valid previous ownership (2-50 characters)';
+                isValid = false;
+            } else {
+                document.getElementById('prevOwnershipError').textContent = '';
+            }
+
+            // Validate current ownership input if not empty
+            const currOwnership = document.getElementById('Curr_ownership').value;
+            if (currOwnership && (currOwnership.length < 2 || currOwnership.length > 50)) {
+                document.getElementById('currOwnershipError').textContent = 'Please enter a valid current ownership (2-50 characters)';
+                isValid = false;
+            } else {
+                document.getElementById('currOwnershipError').textContent = '';
+            }
+
+            // Validate area input if not empty
+            const area = document.getElementById('Area').value;
+            if (area && (area.length < 2 || area.length > 50)) {
+                document.getElementById('areaError').textContent = 'Please enter a valid area (2-50 characters)';
+                isValid = false;
+            } else {
+                document.getElementById('areaError').textContent = '';
+            }
+
+            // Validate number of pictures input if not empty
+            const picNum = document.getElementById("Pic_num").value;
+            if (picNum && (picNum < 0 || picNum > 100)) {
+                document.getElementById('picNumError').textContent = 'Please enter a valid number of pictures (0 - 100)';
+                isValid = false;
+            } else {
+                document.getElementById('picNumError').textContent = '';
+            }
+
+            // Validate creation date input
+            const creDate = document.getElementById("Cre_date").value;
+            if (!creDate) {
+                document.getElementById('creDateError').textContent = 'This field is mandatory, please fill it out *';
+                isValid = false;
+            } else {
+                document.getElementById('creDateError').textContent = '';
+            }
+
+            // Validate re-publish date input
+            const repubDate = document.getElementById("Repub_date").value;
+            if (repubDate && !/^\d{4}-\d{2}-\d{2}$/.test(repubDate)) {
+                document.getElementById('repubDateError').textContent = 'Please enter a valid re-publish date';
+                isValid = false;
+            } else {
+                document.getElementById('repubDateError').textContent = '';
+            }
+
+            // Validate description input if not empty
+            const description = document.getElementById("Description").value;
+            if (description && (description.length < 2 || description.length > 1000)) {
+                document.getElementById('descriptionError').textContent = 'Please enter a valid description (2-1000 characters)';
+                isValid = false;
+            } else {
+                document.getElementById('descriptionError').textContent = '';
+            }
+
+            // Validate color input if not empty
+            const color = document.getElementById("Color").value;
+            if (color && (color.length < 2 || color.length > 50)) {
+                document.getElementById('colorError').textContent = 'Please enter a valid color (2-50 characters)';
+                isValid = false;
+            } else {
+                document.getElementById('colorError').textContent = '';
+            }
+
+            // Validate kilometers input if not empty
+            const km = document.getElementById("Km").value;
+            if (km && (km <= 0 || km > 1000000)) {
+                document.getElementById('kmError').textContent = 'Please enter a valid kilometer value (0 - 1000000)';
+                isValid = false;
+            } else {
+                document.getElementById('kmError').textContent = '';
+            }
+
+            // Validate test input if not empty
+            const test = document.getElementById("Test").value;
+            if (test && (test < 0 || test > 100)) {
+                document.getElementById('testError').textContent = 'Please enter a valid test value (0 - 100)';
+                isValid = false;
+            } else {
+                document.getElementById('testError').textContent = '';
+            }
+
+            // Validate supply score input if not empty
+            const supplyScore = document.getElementById("Supply_score").value;
+            if (supplyScore && (supplyScore < 0 || supplyScore > 100)) {
+                document.getElementById('supplyScoreError').textContent = 'Please enter a valid supply score (0 - 100)';
+                isValid = false;
+            } else {
+                document.getElementById('supplyScoreError').textContent = '';
+            }
+
+            return isValid;
+        }
+
+        // Function to handle form submission
+        function submitForm(event) {
+            event.preventDefault();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = new FormData(document.getElementById("prediction-form"));
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.error) {
+                    document.getElementById("result").innerHTML = 'Error: ' + JSON.stringify(result.error);
+                } else {
+                    const estimatedPrice = result.prediction;
+                    const rmse = 10480.454498077275; // Static RMSE value
+                    document.getElementById("result").innerHTML = 
+                        `Estimated Price: ${estimatedPrice} shekels<br>` +
+                        `<small>Note: The result has an average deviation of ${Math.round(rmse)} shekels.</small>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById("result").innerHTML = 'Error: ' + error;
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Car Price Estimation</h1>
+        <p>Please enter the car details to get a price estimation:</p>
+        <p>(fields marked with * are mandatory)</p>
+        <form id="prediction-form" onsubmit="submitForm(event)">
+            <!-- Input for manufactor -->
+            <label for="manufactor">Manufactor:*</label>
+            <input type="text" id="manufactor" name="manufactor" required minlength="2" maxlength="50" list="manufactorList">
+            <datalist id="manufactorList"></datalist>
+            <div id="manufactorError" class="error"></div>
+
+            <!-- Input for Year -->
+            <label for="Year">Year:*</label>
+            <input type="number" id="Year" name="Year" required min="1900" max="2023">
+            <div id="yearError" class="error"></div>
+
+            <!-- Input for model -->
+            <label for="model">Model:*</label>
+            <input type="text" id="model" name="model" required minlength="2" maxlength="50" list="modelList">
+            <datalist id="modelList"></datalist>
+            <div id="modelError" class="error"></div>
+
+            <!-- Input for Hand -->
+            <label for="Hand">Hand:*</label>
+            <input type="number" id="Hand" name="Hand" required min="1" max="5">
+            <div id="handError" class="error"></div>
+
+            <!-- Input for Gear -->
+            <label for="Gear">Gear:</label>
+            <input type="text" id="Gear" name="Gear" minlength="2" maxlength="50" list="gearList">
+            <datalist id="gearList"></datalist>
+            <div id="gearError" class="error"></div>
+
+            <!-- Input for capacity_Engine -->
+            <label for="capacity_Engine">Engine Capacity:</label>
+            <input type="number" id="capacity_Engine" name="capacity_Engine" min="0" max="10000" step="0.1">
+            <div id="capacityError" class="error"></div>
+
+            <!-- Input for Engine_type -->
+            <label for="Engine_type">Engine Type:</label>
+            <input type="text" id="Engine_type" name="Engine_type" minlength="2" maxlength="50">
+            <div id="engineTypeError" class="error"></div>
+
+            <!-- Input for Prev_ownership -->
+            <label for="Prev_ownership">Previous Ownership:</label>
+            <input type="text" id="Prev_ownership" name="Prev_ownership" minlength="2" maxlength="50">
+            <div id="prevOwnershipError" class="error"></div>
+
+            <!-- Input for Curr_ownership -->
+            <label for="Curr_ownership">Current Ownership:</label>
+            <input type="text" id="Curr_ownership" name="Curr_ownership" minlength="2" maxlength="50">
+            <div id="currOwnershipError" class="error"></div>
+
+            <!-- Input for Area -->
+            <label for="Area">Area:</label>
+            <input type="text" id="Area" name="Area" minlength="2" maxlength="50">
+            <div id="areaError" class="error"></div>
+
+            <!-- Input for City -->
+            <label for="City">City:*</label>
+            <input type="text" id="City" name="City" required minlength="2" maxlength="50" list="cityList">
+            <datalist id="cityList"></datalist>
+            <div id="cityError" class="error"></div>
+
+            <!-- Input for Pic_num -->
+            <label for="Pic_num">Number of Pictures:</label>
+            <input type="number" id="Pic_num" name="Pic_num" min="0" max="100">
+            <div id="picNumError" class="error"></div>
+
+            <!-- Input for Cre_date -->
+            <label for="Cre_date">Creation Date:*</label>
+            <input type="date" id="Cre_date" name="Cre_date" required>
+            <div id="creDateError" class="error"></div>
+
+            <!-- Input for Repub_date -->
+            <label for="Repub_date">Re-publish Date:</label>
+            <input type="date" id="Repub_date" name="Repub_date">
+            <div id="repubDateError" class="error"></div>
+            
+            <!-- Input for Description -->
+            <label for="Description">Description:</label>
+            <textarea id="Description" name="Description" rows="4" minlength="2" maxlength="1000"></textarea>
+            <div id="descriptionError" class="error"></div>
+
+            <!-- Input for Color -->
+            <label for="Color">Color:</label>
+            <input type="text" id="Color" name="Color" minlength="2" maxlength="20">
+            <div id="colorError" class="error"></div>
+
+            <!-- Input for Km -->
+            <label for="Km">Kilometers:</label>
+            <input type="number" id="Km" name="Km" min="0" max="1000000">
+            <div id="kmError" class="error"></div>
+
+            <!-- Input for Test -->
+            <label for="Test">Test:</label>
+            <input type="number" id="Test" name="Test" min="0" max="100">
+            <div id="testError" class="error"></div>
+
+            <!-- Input for Supply_score -->
+            <label for="Supply_score">Supply Score:</label>
+            <input type="number" id="Supply_score" name="Supply_score" min="0" max="100">
+            <div id="supplyScoreError" class="error"></div>
+
+            <!-- Submit button for the form -->
+            <input type="submit" value="Price Estimation">
+        </form>
+        <p id="result"></p>
+    </div>
+</body>
+</html>
