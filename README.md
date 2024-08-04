@@ -11,7 +11,6 @@ This project uses machine learning to predict car prices based on various featur
 - `predict_price.py`: Script for making predictions using the trained model.
 - `app.py`: Flask application that serves the web page and handles user input for price predictions.
 - `dataset.csv`: Sample dataset used for training the model.
-- `unique_values.pkl`: file with unique values for categorical features.
 - `templates/index.html`: HTML form for user input.
 
 
