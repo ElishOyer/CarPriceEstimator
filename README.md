@@ -17,7 +17,7 @@ This project uses machine learning to predict car prices based on various featur
 
 ## Setup Instructions
 
-1. **Generate Unique Values File**: Run the following script to generate the `unique_values.pkl` file:
+1. **Create Unique Values File**: Run the following script to generate the `unique_values.pkl` file:
    ```bash
    python create_unique_values.py
 
